@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <sys/time.h>
-#define TPB 256
-#define NUM_PARTICLES 40000
-#define NUM_ITTERATIONS 5
+#define TPB 16
+#define NUM_PARTICLES 1000000
+#define NUM_ITTERATIONS 10
 
 #define TRUE 1
 #define FALSE 0
@@ -25,11 +25,12 @@ __device__ float3 operator*(const float3 &a, const int &b)
 
 __host__ int operator!=(const float3 &a, const float3 &b)
 {
-	if(a.x != b.x)
+	const float round_err = 0.0001;
+	if(fabs(a.x - b.x) >= round_err)
 		return TRUE;
-	else if(a.y != b.y)
+	else if(fabs(a.y - b.y) >= round_err)
 		return TRUE;
-	else if(a.z != b.z)
+	else if(fabs(a.z - b.z) >= round_err)
 		return TRUE;
 	else
 		return FALSE;
@@ -55,7 +56,7 @@ void cpu_update(int n, Particle* a, int dt)
 	for(int i = 0; i < n; i++)
 	{
 		a[i].velocity.x += 1;
-	        a[i].velocity.y += 2;
+	  a[i].velocity.y += 2;
 		a[i].velocity.z += 3;
 		a[i].position.x += a[i].velocity.x * dt;
 		a[i].position.y += a[i].velocity.y * dt;
@@ -77,12 +78,14 @@ double timeeval(struct timeval t0, struct timeval t1)
 {
 	return (double)(t1.tv_sec - t0.tv_sec) * 1000.0L + (double)(t1.tv_usec - t0.tv_usec) / 1000.0L;
 }
+
 int main()
 {
 
 	srand((unsigned int)time(NULL));
 
-	Particle particles[NUM_PARTICLES];
+	//Particle particles[NUM_PARTICLES];
+	Particle *particles = (Particle*)malloc(NUM_PARTICLES * sizeof(Particle));
 
 	for(int i = 0; i < NUM_PARTICLES; i++)
 	{

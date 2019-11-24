@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <sys/time.h>
-#define ARRAY_SIZE 40000
+#define ARRAY_SIZE 1000000
 #define blocksize 256
 #define TRUE 1
 #define FALSE 0
@@ -19,11 +19,13 @@ __global__ void gpu_saxpy(int n, float a, float *x, float *y)
 
 int cmp_saxpy(int n, float *cpu_y, float *gpu_y)
 {
+	const float round_err = 0.0001;
 	for(int i = 0; i < ARRAY_SIZE ; i++)
 	{
-		if(cpu_y[i] != gpu_y[i])
+		if(fabs(cpu_y[i] - gpu_y[i]) >= round_err)
 			return FALSE;
 	}
+
 	return TRUE;
 }
 
@@ -56,11 +58,12 @@ int main()
 
   struct timeval start, end;
 
+
   //move data from cpu to gpu
 	cudaMemcpy(x_gpu, x_cpu, ARRAY_SIZE*sizeof(float), cudaMemcpyHostToDevice);
 	cudaMemcpy(y_gpu, y_cpu, ARRAY_SIZE*sizeof(float), cudaMemcpyHostToDevice);
 
-  gettimeofday(&start, NULL);
+	gettimeofday(&start, NULL);
   cpu_saxpy(ARRAY_SIZE,1.0f, x_cpu, y_cpu);
   gettimeofday(&end, NULL);
   printf("Computing SAXPY on the CPU… Done!\n");
