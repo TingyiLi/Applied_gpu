@@ -411,10 +411,10 @@ __global__ void gpu_sobel(int width, int height, float *image, float *image_out)
                 sh_block[(threadIdx.x+2)*BLOCK_SIZE_SH + threadIdx.y] = image[offset_t_2];
                 if (threadIdx.y == blockDim.y - 1)
                 {
-			sh_block[(threadIdx.x+1)*BLOCK_SIZE_SH + threadIdx.y + 1] = image[offset_t_1 + 1];
-			sh_block[(threadIdx.x+1)*BLOCK_SIZE_SH + threadIdx.y + 2] = image[offset_t_1 + 2];
-			sh_block[(threadIdx.x+2)*BLOCK_SIZE_SH + threadIdx.y + 1] = image[offset_t_2 + 1];
-			sh_block[(threadIdx.x+2)*BLOCK_SIZE_SH + threadIdx.y + 2] = image[offset_t_2 + 2];
+              			sh_block[(threadIdx.x+1)*BLOCK_SIZE_SH + threadIdx.y + 1] = image[offset_t_1 + 1];
+              			sh_block[(threadIdx.x+1)*BLOCK_SIZE_SH + threadIdx.y + 2] = image[offset_t_1 + 2];
+              			sh_block[(threadIdx.x+2)*BLOCK_SIZE_SH + threadIdx.y + 1] = image[offset_t_2 + 1];
+              			sh_block[(threadIdx.x+2)*BLOCK_SIZE_SH + threadIdx.y + 2] = image[offset_t_2 + 2];
                 }
         }
         __syncthreads();

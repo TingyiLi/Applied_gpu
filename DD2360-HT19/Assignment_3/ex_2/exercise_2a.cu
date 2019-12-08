@@ -39,7 +39,7 @@ __host__ int operator!=(const float3 &a, const float3 &b)
 float3 gen_random_float3()
 {
 	static float MAX_GEN = 10.0;
-	return make_float3((float)rand()/(float)(RAND_MAX/MAX_GEN), (float)rand()/(float)(RAND_MAX/MAX_GEN), (float)rand()/(float)(RAND_MAX/MAX_GEN)); 
+	return make_float3((float)rand()/(float)(RAND_MAX/MAX_GEN), (float)rand()/(float)(RAND_MAX/MAX_GEN), (float)rand()/(float)(RAND_MAX/MAX_GEN));
 }
 
 __global__ void update(Particle* a, int dt)
@@ -57,7 +57,7 @@ void cpu_update(int n, Particle* a, int dt)
 	{
 		a[i].velocity.x += 1;
 	        a[i].velocity.y += 2;
-		a[i].velocity.z += 3;	
+		a[i].velocity.z += 3;
 		a[i].position.x += a[i].velocity.x * dt;
 		a[i].position.y += a[i].velocity.y * dt;
 		a[i].position.z += a[i].velocity.z * dt;
@@ -80,11 +80,11 @@ double timeeval(struct timeval t0, struct timeval t1)
 }
 int main()
 {
-	
+
 	srand((unsigned int)time(NULL));
-	
+
 	Particle particles[NUM_PARTICLES];
-	
+
 	// initinalization of particles
 
 	int i;
@@ -97,14 +97,14 @@ int main()
 	Particle *gpu_particles;
 	Particle *results_particles = (Particle*)malloc(NUM_PARTICLES*sizeof(Particle));
 
-	cudaMallocHost((void **)&gpu_particles, NUM_PARTICLES*sizeof(Particle));
+	cudaMalloc((void **)&gpu_particles, NUM_PARTICLES*sizeof(Particle));
 	cudaMemcpy(gpu_particles, particles, NUM_PARTICLES*sizeof(Particle), cudaMemcpyHostToDevice);
 
 	for(i = 0; i < NUM_ITTERATIONS; i++)
 	{
 		update<<<(NUM_PARTICLES + TPB - 1)/TPB, TPB>>>(gpu_particles, 1);
 		cudaMemcpy(results_particles, gpu_particles, NUM_PARTICLES*sizeof(Particle), cudaMemcpyDeviceToHost);
-	}	
+	}
 	cudaFreeHost(gpu_particles);
 
 	return 0;
