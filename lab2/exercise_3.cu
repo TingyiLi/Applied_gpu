@@ -96,14 +96,15 @@ int main()
 	Particle *gpu_particles;
 	Particle *results_particles = (Particle*)malloc(NUM_PARTICLES*sizeof(Particle));
 	cudaMalloc(&gpu_particles, NUM_PARTICLES*sizeof(Particle));
-  struct timeval start, end;
-  gettimeofday(&start, NULL);
+  	struct timeval start, end;
+  	gettimeofday(&start, NULL);
 	cudaMemcpy(gpu_particles, particles, NUM_PARTICLES*sizeof(Particle), cudaMemcpyHostToDevice);
-  for(int i = 0; i < NUM_ITTERATIONS; i++){
+  	for(int i = 0; i < NUM_ITTERATIONS; i++){
 		update<<<(NUM_PARTICLES + TPB - 1)/TPB, TPB>>>(gpu_particles, 1);
+	  	cudaDeviceSynchronize();
 	}
-  gettimeofday(&end, NULL);
-  printf("GPU execution time: %f milliseconds.\n", timeeval(start, end));
+  	gettimeofday(&end, NULL);
+  	printf("GPU execution time: %f milliseconds.\n", timeeval(start, end));
 
 	gettimeofday(&start, NULL);
 	for(int i = 0; i < NUM_ITTERATIONS; i++)
