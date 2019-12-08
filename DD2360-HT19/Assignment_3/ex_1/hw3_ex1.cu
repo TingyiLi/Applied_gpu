@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -310,23 +309,29 @@ __global__ void gpu_gaussian(int width, int height, float *image, float *image_o
     {
         int offset_t = index_x * width + index_y;
         int offset   = (index_x + 1) * width + (index_y + 1);
+	int offset_block = threadIdx.x*BLOCK_SIZE_SH + threadIdx.y;
         sh_block[threadIdx.x*BLOCK_SIZE_SH + threadIdx.y] = image[offset_t];
 	if(threadIdx.y == blockDim.y - 1)
 	{
-        	sh_block[threadIdx.x*BLOCK_SIZE_SH + threadIdx.y + 1] = image[offset_t + 1];
-        	sh_block[threadIdx.x*BLOCK_SIZE_SH + threadIdx.y + 2] = image[offset_t + 2];
+        	sh_block[offset_block + 1] = image[offset_t + 1];
+        	sh_block[offset_block + 2] = image[offset_t + 2];
 
 	}
 	if(threadIdx.x == blockDim.x - 1)
 	{
 		int offset_t_1 = (index_x + 1)*width + index_y;
 		int offset_t_2 = (index_x + 2)*width + index_y;
-        	sh_block[(threadIdx.x+1)*BLOCK_SIZE_SH + threadIdx.y] = image[offset_t_1];
-        	sh_block[(threadIdx.x+2)*BLOCK_SIZE_SH + threadIdx.y] = image[offset_t_2];
+
+		int offset_block_1 = (threadIdx.x+1)*BLOCK_SIZE_SH + threadIdx.y;
+		int offset_block_2 = (threadIdx.x+2)*BLOCK_SIZE_SH + threadIdx.y;
+        	sh_block[offset_block_1] = image[offset_t_1];
+        	sh_block[offset_block_2] = image[offset_t_2];
 		if (threadIdx.y == blockDim.y - 1)
 		{
-			sh_block[(threadIdx.x+1)*BLOCK_SIZE_SH + threadIdx.y + 1] = image[offset_t_1 + 1];
-			sh_block[(threadIdx.x+2)*BLOCK_SIZE_SH + threadIdx.y + 2] = image[offset_t_2 + 2];
+			sh_block[offset_block_1 + 1] = image[offset_t_1 + 1];
+			sh_block[offset_block_1 + 2] = image[offset_t_1 + 2];
+			sh_block[offset_block_2 + 1] = image[offset_t_2 + 1];
+			sh_block[offset_block_2 + 2] = image[offset_t_2 + 2];
 		}
 	}
 	__syncthreads();
@@ -406,8 +411,10 @@ __global__ void gpu_sobel(int width, int height, float *image, float *image_out)
                 sh_block[(threadIdx.x+2)*BLOCK_SIZE_SH + threadIdx.y] = image[offset_t_2];
                 if (threadIdx.y == blockDim.y - 1)
                 {
-                        sh_block[(threadIdx.x+1)*BLOCK_SIZE_SH + threadIdx.y + 1] = image[offset_t_1 + 1];
-                        sh_block[(threadIdx.x+2)*BLOCK_SIZE_SH + threadIdx.y + 2] = image[offset_t_2 + 2];
+			sh_block[(threadIdx.x+1)*BLOCK_SIZE_SH + threadIdx.y + 1] = image[offset_t_1 + 1];
+			sh_block[(threadIdx.x+1)*BLOCK_SIZE_SH + threadIdx.y + 2] = image[offset_t_1 + 2];
+			sh_block[(threadIdx.x+2)*BLOCK_SIZE_SH + threadIdx.y + 1] = image[offset_t_2 + 1];
+			sh_block[(threadIdx.x+2)*BLOCK_SIZE_SH + threadIdx.y + 2] = image[offset_t_2 + 2];
                 }
         }
         __syncthreads();
@@ -526,7 +533,7 @@ int main(int argc, char **argv)
         // Store the final result image with the Sobel filter applied
         store_result(3, elapsed[0], elapsed[1], bitmap.width, bitmap.height, image_out[0]);
     }
-    
+
     // Release the allocated memory
     for (int i = 0; i < 2; i++)
     {
